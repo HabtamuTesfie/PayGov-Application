@@ -195,7 +195,7 @@ public class AccountResource {
      */
     @DeleteMapping("/account/sessions/{series}")
     public void invalidateSession(@PathVariable String series) {
-        String decodedSeries = URLDecoder.decode(series, StandardCharsets.UTF_8);
+        char decodedSeries = URLDecoder.decode(series, StandardCharsets.UTF_8);
         SecurityUtils
             .getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
