@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+ import java.io.UnsupportedEncodingException;
 
 /**
  * REST controller for managing the current user's account.
@@ -195,7 +196,15 @@ public class AccountResource {
      */
     @DeleteMapping("/account/sessions/{series}")
     public void invalidateSession(@PathVariable String series) {
+        
+        
+        try {
         String decodedSeries = URLDecoder.decode(series, StandardCharsets.UTF_8);
+        } catch (UnsupportedEncodingException e) {
+    // not going to happen - value came from JDK's own StandardCharsets
+}
+        
+        
         SecurityUtils
             .getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
