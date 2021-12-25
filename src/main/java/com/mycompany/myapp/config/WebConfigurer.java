@@ -1,7 +1,7 @@
 package com.mycompany.myapp.config;
 
 import static java.net.URLDecoder.decode;
-
+ import java.io.UnsupportedEncodingException;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
