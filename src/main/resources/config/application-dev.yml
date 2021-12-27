@@ -34,7 +34,7 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:postgresql://localhost:5432/paygov
     username: postgres
-    password: AByalewAB
+    password: 0938633388H
     hikari:
       poolName: Hikari
       auto-commit: false

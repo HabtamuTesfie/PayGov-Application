@@ -7,9 +7,14 @@ buildscript {
     }
 }
 
+
+
+
+
+
 plugins {
     id "java"
-    id "maven-publish"  
+    id "maven-publish"
     id "idea"
     id "eclipse"
     id "jacoco"
@@ -80,11 +85,19 @@ eclipse {
     }
 }
 
+
+
+
+
+
+
 defaultTasks "bootRun"
 
 springBoot {
     mainClassName = "com.mycompany.myapp.PayGovApp"
 }
+
+
 
 test {
     useJUnitPlatform()
@@ -163,6 +176,10 @@ bootJar {
     baseName = 'gs-consuming-web-service'
     version =  '0.1.0'
     from genJaxb.classesDir
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+
+
+
 }
 
 task afterEclipseImport {
@@ -362,6 +379,20 @@ dependencies {
     developmentOnly "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
     //jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
 }
+
+
+
+jar {
+    // Keep jar clean:
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+
+    manifest {
+        attributes 'Main-Class': 'com.mycompany.myapp.PayGovApp'
+      }
+}
+
+
+
 
 if (project.hasProperty("gae")) {
     task createPom {

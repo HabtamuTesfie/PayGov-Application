@@ -1,134 +1,171 @@
 package com.mycompany.myapp.web.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ingenico.connect.gateway.sdk.java.Client;
-import com.ingenico.connect.gateway.sdk.java.CommunicatorConfiguration;
-import com.ingenico.connect.gateway.sdk.java.Factory;
-import com.ingenico.connect.gateway.sdk.java.domain.definitions.Address;
-import com.ingenico.connect.gateway.sdk.java.domain.definitions.AmountOfMoney;
-import com.ingenico.connect.gateway.sdk.java.domain.hostedcheckout.CreateHostedCheckoutRequest;
-import com.ingenico.connect.gateway.sdk.java.domain.hostedcheckout.CreateHostedCheckoutResponse;
-import com.ingenico.connect.gateway.sdk.java.domain.hostedcheckout.definitions.HostedCheckoutSpecificInput;
-import com.ingenico.connect.gateway.sdk.java.domain.payment.definitions.Customer;
-import com.ingenico.connect.gateway.sdk.java.domain.payment.definitions.Order;
-import com.mycompany.myapp.PaymentStatusCodeType;
-import com.mycompany.myapp.domain.MockPg;
-import com.mycompany.myapp.domain.Pay;
-import com.mycompany.myapp.repository.PayRepository;
-import com.mycompany.myapp.web.rest.errors.BadRequestAlertException;
-
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
-import tech.jhipster.web.util.HeaderUtil;
-import tech.jhipster.web.util.ResponseUtil;
-
-import javax.validation.Valid;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import com.paypal.exception.ClientActionRequiredException;
-import com.paypal.exception.HttpErrorException;
-import com.paypal.exception.InvalidCredentialException;
-import com.paypal.exception.InvalidResponseDataException;
-import com.paypal.exception.MissingCredentialException;
-import com.paypal.exception.SSLConfigurationException;
+import com.paypal.exception.*;
 import com.paypal.sdk.exceptions.OAuthException;
-import com.paypal.sdk.exceptions.PayPalException;
-
-import org.w3c.dom.Node;
+import java.io.IOException;
+import java.util.*;
+import javax.xml.parsers.ParserConfigurationException;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.xml.sax.SAXException;
-
-import liquibase.exception.InvalidChangeDefinitionException;
-import liquibase.parser.core.ParsedNodeException;
-import urn.ebay.api.PayPalAPI.DoExpressCheckoutPaymentReq;
-import urn.ebay.api.PayPalAPI.DoExpressCheckoutPaymentRequestType;
-import urn.ebay.api.PayPalAPI.DoExpressCheckoutPaymentResponseType;
-import urn.ebay.api.PayPalAPI.GetAuthDetailsResponseType;
-import urn.ebay.api.PayPalAPI.GetExpressCheckoutDetailsReq;
-import urn.ebay.api.PayPalAPI.GetExpressCheckoutDetailsRequestType;
-import urn.ebay.api.PayPalAPI.PayPalAPIInterfaceServiceService;
-import urn.ebay.api.PayPalAPI.SetExpressCheckoutReq;
-import urn.ebay.api.PayPalAPI.SetExpressCheckoutRequestType;
-import urn.ebay.api.PayPalAPI.SetExpressCheckoutResponseType;
+import urn.ebay.api.PayPalAPI.*;
 import urn.ebay.apis.CoreComponentTypes.BasicAmountType;
-import urn.ebay.apis.eBLBaseComponents.CurrencyCodeType;
-import urn.ebay.apis.eBLBaseComponents.GetExpressCheckoutDetailsResponseDetailsType;
-import urn.ebay.apis.eBLBaseComponents.PayerInfoType;
-import urn.ebay.apis.eBLBaseComponents.PaymentActionCodeType;
-import urn.ebay.apis.eBLBaseComponents.PaymentDetailsType;
-import urn.ebay.apis.eBLBaseComponents.SetExpressCheckoutRequestDetailsType;
-import com.mycompany.myapp.util.Configuration;
-import urn.ebay.api.PayPalAPI.GetExpressCheckoutDetailsResponseType;
-import urn.ebay.apis.eBLBaseComponents.DoExpressCheckoutPaymentRequestDetailsType;
-import urn.ebay.apis.eBLBaseComponents.DoExpressCheckoutPaymentResponseDetailsType;
-import urn.ebay.apis.eBLBaseComponents.PaymentInfoType;
-
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-/**
- * REST controller for managing {@link com.mycompany.myapp.domain.Pay}.
- */
-@RestController
-@RequestMapping("/api")
-@Transactional
+import urn.ebay.apis.eBLBaseComponents.*;
 
 public class GetExpressCheckout {
-    @GetMapping("/paypalGetChechout")
-    public GetExpressCheckoutDetailsResponseDetailsType getExpressCheckoutDetails(String token) throws
-     PayPalException,FileNotFoundException,SAXException,ParserConfigurationException,SSLConfigurationException
-     ,InvalidChangeDefinitionException,UnsupportedEncodingException,HttpErrorException,InvalidResponseDataException
-     ,ClientActionRequiredException,MissingCredentialException,OAuthException,IOException,InterruptedException{
-		//CallerServices caller = new CallerServices();
-        
-		//APIProfile profile = ...;
-        Map<String,String> configurationMap =  Configuration.getAcctAndConfig();
-        // Creating service wrapper object to make an API call by loading configuration map.
-        PayPalAPIInterfaceServiceService service = new PayPalAPIInterfaceServiceService(configurationMap);
 
-        GetExpressCheckoutDetailsReq grequest=new GetExpressCheckoutDetailsReq();
-		GetExpressCheckoutDetailsRequestType pprequest = new GetExpressCheckoutDetailsRequestType();
-		pprequest.setVersion("63.0");
-		pprequest.setToken(token);
-        
-       grequest.setGetExpressCheckoutDetailsRequest(pprequest);
-       GetExpressCheckoutDetailsResponseType ppresponse=null;
+    String token;
 
- try{
-     ppresponse = service.getExpressCheckoutDetails(grequest);  
+    public String payNowSoap(Double d_amount)
+        throws ClientActionRequiredException, SSLConfigurationException, MissingCredentialException, OAuthException, InvalidResponseDataException, InvalidCredentialException, IOException, ParserConfigurationException, HttpErrorException, InterruptedException, SAXException {
+        PaymentDetailsType paymentDetails = new PaymentDetailsType();
+        paymentDetails.setPaymentAction(PaymentActionCodeType.SALE);
+        PaymentDetailsItemType item = new PaymentDetailsItemType();
+        BasicAmountType amt = new BasicAmountType();
+        amt.setCurrencyID(CurrencyCodeType.fromValue("USD"));
+        double itemAmount = d_amount;
+        amt.setValue(String.valueOf(itemAmount));
+        int itemQuantity = 1;
+        item.setQuantity(itemQuantity);
+        item.setName("item");
+        item.setAmount(amt);
+
+        List<PaymentDetailsItemType> lineItems = new ArrayList<PaymentDetailsItemType>();
+        lineItems.add(item);
+        paymentDetails.setPaymentDetailsItem(lineItems);
+        BasicAmountType orderTotal = new BasicAmountType();
+        orderTotal.setCurrencyID(CurrencyCodeType.fromValue("USD"));
+        orderTotal.setValue(String.valueOf(itemAmount * itemQuantity));
+        paymentDetails.setOrderTotal(orderTotal);
+        List<PaymentDetailsType> paymentDetailsList = new ArrayList<PaymentDetailsType>();
+        paymentDetailsList.add(paymentDetails);
+
+        SetExpressCheckoutRequestDetailsType setExpressCheckoutRequestDetails = new SetExpressCheckoutRequestDetailsType();
+        setExpressCheckoutRequestDetails.setReturnURL("http://localhost:8080/response");
+        setExpressCheckoutRequestDetails.setCancelURL("http://localhost:8080/");
+
+        setExpressCheckoutRequestDetails.setPaymentDetails(paymentDetailsList);
+
+        SetExpressCheckoutRequestType setExpressCheckoutRequest = new SetExpressCheckoutRequestType(setExpressCheckoutRequestDetails);
+        setExpressCheckoutRequest.setVersion("104.0");
+
+        SetExpressCheckoutReq setExpressCheckoutReq = new SetExpressCheckoutReq();
+        setExpressCheckoutReq.setSetExpressCheckoutRequest(setExpressCheckoutRequest);
+
+        Map<String, String> sdkConfig = new HashMap<String, String>();
+        sdkConfig.put("mode", "sandbox");
+        sdkConfig.put("acct1.UserName", "tolosah929_api1.gmail.com");
+        sdkConfig.put("acct1.Password", "ZNKHJBXNVL9C4NXJ");
+        sdkConfig.put("acct1.Signature", "AjWsTWPqZToOVKDUNiak1LHwFCOzARvVOfBKZ.xHzrhFJyig03ibDX1S");
+        PayPalAPIInterfaceServiceService service = new PayPalAPIInterfaceServiceService(sdkConfig);
+        SetExpressCheckoutResponseType setExpressCheckoutResponse = service.setExpressCheckout(setExpressCheckoutReq);
+
+        token = setExpressCheckoutResponse.getToken();
+        String name = setExpressCheckoutResponse.getVersion();
+        System.out.println(token + " uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu " + name + " ddd");
+
+        String link = "https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=" + token;
+        System.out.println(link);
+        //ExternalContext externalContext = FacesContext.getCurrentInstance().getExternalContext();
+        // externalContext.redirect(link);
+
+        //====================================================================
+
+        return link;
     }
-catch(Exception e)
-   {
-    System.out.println(e);
+
+    public String startgetExpressResponse2()
+        throws ClientActionRequiredException, SSLConfigurationException, MissingCredentialException, OAuthException, InvalidResponseDataException, InvalidCredentialException, IOException, ParserConfigurationException, HttpErrorException, InterruptedException, SAXException {
+        getExpressResponse2("EC-88G01973EF343433U");
+        return "GET is started";
     }
-    System.out.println("===========================================================");
-    System.out.println("===========================================================");
-    System.out.println("===========================================================");
 
-     System.out.println(ppresponse.getGetExpressCheckoutDetailsResponseDetails());
+    public String startDoExpresResponse()
+        throws ClientActionRequiredException, SSLConfigurationException, MissingCredentialException, OAuthException, InvalidResponseDataException, InvalidCredentialException, IOException, ParserConfigurationException, HttpErrorException, InterruptedException, SAXException {
+        doExpressResponse(getExpressResponse2("EC-88G01973EF343433U"));
+        return "Do class is started";
+    }
 
-    System.out.println("===========================================================");
-    System.out.println("===========================================================");
-    System.out.println("===========================================================");
+    public GetExpressCheckoutDetailsResponseDetailsType getExpressResponse2(String token)
+        throws ClientActionRequiredException, SSLConfigurationException, MissingCredentialException, OAuthException, InvalidResponseDataException, InvalidCredentialException, IOException, ParserConfigurationException, HttpErrorException, InterruptedException, SAXException {
+        System.out.println("B   addr Beeeeeeeeeeeeeeeeet");
 
-    //doExpressCheckoutService(ppresponse.getGetExpressCheckoutDetailsResponseDetails());
- return ppresponse.getGetExpressCheckoutDetailsResponseDetails();
+        Map<String, String> sdkConfig = new HashMap<String, String>();
+        sdkConfig.put("mode", "sandbox");
+        sdkConfig.put("acct1.UserName", "tolosah929_api1.gmail.com");
+        sdkConfig.put("acct1.Password", "ZNKHJBXNVL9C4NXJ");
+        sdkConfig.put("acct1.Signature", "AjWsTWPqZToOVKDUNiak1LHwFCOzARvVOfBKZ.xHzrhFJyig03ibDX1S");
+        PayPalAPIInterfaceServiceService service = new PayPalAPIInterfaceServiceService(sdkConfig);
 
-	 }
+        GetExpressCheckoutDetailsReq getECWrapper = new GetExpressCheckoutDetailsReq();
+        // (Required) A timestamped token, the value of which was returned by SetExpressCheckout response.
+        // Character length and limitations: 20 single-byte characters
+        getECWrapper.setGetExpressCheckoutDetailsRequest(new GetExpressCheckoutDetailsRequestType(token));
+        // # API call
+        // Invoke the GetExpressCheckoutDetails method in service wrapper object
+        GetExpressCheckoutDetailsResponseType getECResponse = service.getExpressCheckoutDetails(getECWrapper);
+        getECResponse.getGetExpressCheckoutDetailsResponseDetails();
+
+        System.out.println("B  " + getECResponse.getGetExpressCheckoutDetailsResponseDetails().getToken() + " token Beeeeeeeeeeeeeeeeet");
+        System.out.println(
+            "B  " + getECResponse.getGetExpressCheckoutDetailsResponseDetails().getPaymentDetails() + " payment detail Beeeeeeeeeeeeeeeeet"
+        );
+        System.out.println(
+            "B  " + getECResponse.getGetExpressCheckoutDetailsResponseDetails().getPayerInfo() + " payer info Beeeeeeeeeeeeeeeeet"
+        );
+        System.out.println(
+            "B  " + getECResponse.getGetExpressCheckoutDetailsResponseDetails().getBillingAddress() + " addr Beeeeeeeeeeeeeeeeet"
+        );
+        System.out.println(
+            "B  " + getECResponse.getGetExpressCheckoutDetailsResponseDetails().getCheckoutStatus() + " status Beeeeeeeeeeeeeeeeet"
+        );
+
+        return getECResponse.getGetExpressCheckoutDetailsResponseDetails();
+    }
+
+    public void doExpressResponse(GetExpressCheckoutDetailsResponseDetailsType getECResponse)
+        throws ClientActionRequiredException, SSLConfigurationException, MissingCredentialException, OAuthException, InvalidResponseDataException, InvalidCredentialException, IOException, ParserConfigurationException, HttpErrorException, InterruptedException, SAXException {
+        System.out.println("rrr  rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+
+        Map<String, String> sdkConfig = new HashMap<String, String>();
+        sdkConfig.put("mode", "sandbox");
+        sdkConfig.put("acct1.UserName", "tolosah929_api1.gmail.com");
+        sdkConfig.put("acct1.Password", "ZNKHJBXNVL9C4NXJ");
+        sdkConfig.put("acct1.Signature", "AjWsTWPqZToOVKDUNiak1LHwFCOzARvVOfBKZ.xHzrhFJyig03ibDX1S");
+        PayPalAPIInterfaceServiceService service = new PayPalAPIInterfaceServiceService(sdkConfig);
+
+        // Create request object
+        DoExpressCheckoutPaymentRequestType expressrequest = new DoExpressCheckoutPaymentRequestType();
+        DoExpressCheckoutPaymentRequestDetailsType requestDetails = new DoExpressCheckoutPaymentRequestDetailsType();
+        expressrequest.setDoExpressCheckoutPaymentRequestDetails(requestDetails);
+
+        requestDetails.setPaymentDetails(getECResponse.getPaymentDetails());
+        // (Required) The timestamped token value that was returned in the SetExpressCheckout response and passed in the GetExpressCheckoutDetails request.
+        requestDetails.setToken(getECResponse.getToken());
+        // (Required) Unique PayPal buyer account identification number as returned in the GetExpressCheckoutDetails response
+        requestDetails.setPayerID(getECResponse.getPayerInfo().getPayerID());
+        // (Required) How you want to obtain payment. It is one of the following values:
+        // * Authorization – This payment is a basic authorization subject to settlement with PayPal Authorization and Capture.
+        // * Order – This payment is an order authorization subject to settlement with PayPal Authorization and Capture.
+        // * Sale – This is a final sale for which you are requesting payment.
+        // Note: You cannot set this value to Sale in the SetExpressCheckout request and then change this value to Authorization in the DoExpressCheckoutPayment request.
+        requestDetails.setPaymentAction(PaymentActionCodeType.SALE);
+        // Invoke the API
+        DoExpressCheckoutPaymentReq expresswrapper = new DoExpressCheckoutPaymentReq();
+        expresswrapper.setDoExpressCheckoutPaymentRequest(expressrequest);
+        // # API call
+        // Invoke the DoExpressCheckoutPayment method in service wrapper object
+        DoExpressCheckoutPaymentResponseType doECResponse = service.doExpressCheckoutPayment(expresswrapper);
+        // Check for API return status
+
+        //        if (doECResponse.getAck().equals(AckCodeType.FAILURE) ||
+        //            (doECResponse.getErrors() != null && doECResponse.getErrors().Count > 0)) {
+        //            return "faild";
+        //        } else {
+        //            TempData["TransactionResult"] = "Transaction ID:" + doECResponse.DoExpressCheckoutPaymentResponseDetails.PaymentInfo[0].TransactionID + Environment.NewLine + "Payment status" + doECResponse.DoExpressCheckoutPaymentResponseDetails.PaymentInfo[0].PaymentStatus.Value.ToString();
+        //            return RedirectToAction("SaveCustomer", "SignupOrLogin");
+        //        }
+
+        System.out.println("rrr " + doECResponse.getAck() + " rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+    }
 }
