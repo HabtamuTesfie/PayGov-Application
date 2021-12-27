@@ -16,7 +16,7 @@
     "otherModules": [],
     "pages": [],
     "creationTimestamp": 1637140359975,
-    "serviceDiscoveryType": "no",
+    "serviceDiscoveryType": false,
     "reactive": false,
     "authenticationType": "session",
     "packageName": "com.mycompany.myapp",
@@ -44,6 +44,15 @@
     "enableGradleEnterprise": false,
     "languages": ["en", "fr"],
     "lastLiquibaseTimestamp": 1637328211000,
-    "entities": ["Pay"]
+    "entities": ["Pay"],
+    "appsFolders": ["jhipsterFirst"],
+    "directoryPath": "../",
+    "gatewayType": "SpringCloudGateway",
+    "clusteredDbApps": {},
+    "monitoring": "no",
+    "jwtSecretKey": "ZDJiMDZmM2ZhZTgyMDhmMjI0MWQ0ZGQxMDIwNmQ3YjM2YmE0YjM5NzE3YjQ2ZTdmMmUzYTkyY2Y3ZjBlMThmNWVmMDM4NzA4NzRmNTYwNDczNzI0ZGJjNWQ0M2Y4YmU0NjcyNw==",
+    "herokuAppName": "paygov",
+    "herokuDeployType": "jar",
+    "herokuJavaVersion": "11"
   }
 }
