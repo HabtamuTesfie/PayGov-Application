@@ -327,8 +327,8 @@ public class PayResource {
         throws PayPalException, XPathExpressionException, ClientActionRequiredException, SSLConfigurationException, MissingCredentialException, InvalidResponseDataException, InvalidCredentialException, IOException, ParsedNodeException, HttpErrorException, InterruptedException, SAXException, ParserConfigurationException, InvalidChangeDefinitionException {
         Long PayerId = 5l;
         String paymentAmount = "25";
-        String returnURL = "http://localhost:9000/payment-save";
-        String cancelURL = "http://localhost:9000/";
+        String returnURL = "http://localhost:8080/payment-save";
+        String cancelURL = "http://localhost:8080/";
         PaymentActionCodeType paymentAction = PaymentActionCodeType.SALE;
         CurrencyCodeType currencyCode = CurrencyCodeType.EUR;
 
